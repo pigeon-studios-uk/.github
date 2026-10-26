@@ -4,6 +4,16 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.8.0] - 2026-10-26
+
+### Added
+
+- `tools/New-PigeonProject.ps1`: starts a whole new project in one go. It works out the GitLab area, the `pg-` or `pigeon-` path, the local folder and the registry slug; copies the standard files; writes a starting `fxmanifest.lua` (or `package.json` for bots and tools) and a `.gitlab-ci.yml` with the shared checks and release jobs; makes the first commit; and, with a GitLab token, creates the GitLab project with the studio's settings and pushes. It ends with a list of what's left to do by hand.
+
+### Changed
+
+- The free README templates show the banner from `.github/banner.png`, where the free repositories keep it.
+
 ## [2.7.0] - 2026-10-22
 
 ### Added

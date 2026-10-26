@@ -5,7 +5,7 @@ Replace every placeholder in double curly braces, delete sections that don't app
 -->
 
 <div align="center">
-  <img src="docs/img/banner.png" alt="{{RESOURCE_NAME}} by Pigeon Studios" width="100%" />
+  <img src=".github/banner.png" alt="{{RESOURCE_NAME}} by Pigeon Studios" width="100%" />
 
   <h1>{{RESOURCE_NAME}}</h1>
 

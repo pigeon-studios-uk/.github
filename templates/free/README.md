@@ -6,7 +6,7 @@ Placeholders: {{RESOURCE_NAME}} display name · {{RESOURCE_FOLDER}} folder/resou
 -->
 
 <div align="center">
-  <img src="web/img/banner.png" alt="{{RESOURCE_NAME}} by Pigeon Studios" width="100%" />
+  <img src=".github/banner.png" alt="{{RESOURCE_NAME}} by Pigeon Studios" width="100%" />
 
   <h1>{{RESOURCE_NAME}}</h1>
 
