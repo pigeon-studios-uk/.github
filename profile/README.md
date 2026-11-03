@@ -22,6 +22,12 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Dice**](https://github.com/pigeon-studios-uk/pigeon-dice) | Roleplay dice for FiveM: anything from a d20 to `2d6+3`, advantage, Fate dice, coins and ranges, shown in chat and above your head |
 | [**Pigeon Property Watch**](https://github.com/pigeon-studios-uk/pigeon-property-watch) | Finds properties nobody has used for weeks and reports them to Discord, for NoLag Properties and Qbox properties |
 | [**Pigeon Vehicle Access**](https://github.com/pigeon-studios-uk/pigeon-vehicle-access) | Decide who can drive which vehicles, by job, grade, gang, ACE permission or whitelist, for Qbox and QBCore |
+| [**Pigeon Bucket Monitor**](https://github.com/pigeon-studios-uk/pigeon-bucket-monitor) | Logs routing bucket changes to Discord, warns when players are stuck in the wrong bucket, and gives staff commands to check and fix them |
+| [**Pigeon No NPC Aircraft**](https://github.com/pigeon-studios-uk/pigeon-no-npc-aircraft) | Stops NPC planes and helicopters from spawning or flying over your map, without touching players' aircraft |
+| [**Pigeon No Blind Fire**](https://github.com/pigeon-studios-uk/pigeon-no-blind-fire) | Stops players shooting blind from cover: they have to aim out before they can fire |
+| [**Pigeon No Auto Helmet**](https://github.com/pigeon-studios-uk/pigeon-no-auto-helmet) | Stops GTA putting a helmet on players automatically when they get on a bike or into an aircraft |
+| [**Pigeon No Helmet Armour**](https://github.com/pigeon-studios-uk/pigeon-no-helmet-armour) | Removes the hidden headshot protection GTA gives helmets, so a helmet is only a look |
+| [**Pigeon No Weapons In Vehicles**](https://github.com/pigeon-studios-uk/pigeon-no-weapons-in-vehicles) | Keeps weapons holstered in the vehicles you choose, such as police helicopters or buses |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 

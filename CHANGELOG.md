@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.9.0] - 2026-11-03
+
+### Added
+
+- Six new free resources in the organisation profile and in the Q&A and Ideas forms' resource lists: Pigeon Bucket Monitor, Pigeon No NPC Aircraft, Pigeon No Blind Fire, Pigeon No Auto Helmet, Pigeon No Helmet Armour and Pigeon No Weapons In Vehicles.
+
 ## [2.8.0] - 2026-10-26
 
 ### Added
