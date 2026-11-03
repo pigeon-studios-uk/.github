@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.11.0] - 2026-11-03
+
+### Added
+
+- Pigeon Enhanced Check in the organisation profile and in the Q&A and Ideas forms' resource lists.
+
 ## [2.10.1] - 2026-11-03
 
 ### Fixed

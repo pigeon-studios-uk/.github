@@ -28,6 +28,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon No Auto Helmet**](https://github.com/pigeon-studios-uk/pigeon-no-auto-helmet) | Stops GTA putting a helmet on players automatically when they get on a bike or into an aircraft |
 | [**Pigeon No Helmet Armour**](https://github.com/pigeon-studios-uk/pigeon-no-helmet-armour) | Removes the hidden headshot protection GTA gives helmets, so a helmet is only a look |
 | [**Pigeon No Weapons In Vehicles**](https://github.com/pigeon-studios-uk/pigeon-no-weapons-in-vehicles) | Keeps weapons holstered in the vehicles you choose, such as police helicopters or buses |
+| [**Pigeon Enhanced Check**](https://github.com/pigeon-studios-uk/pigeon-enhanced-check) | Scans your server's resources and settings and lists what to change before moving to FiveM for GTAV Enhanced |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
