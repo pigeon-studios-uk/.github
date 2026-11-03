@@ -31,6 +31,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Enhanced Check**](https://github.com/pigeon-studios-uk/pigeon-enhanced-check) | Scans your server's resources and settings and lists what to change before moving to FiveM for GTAV Enhanced |
 | [**Pigeon Driveby Rules**](https://github.com/pigeon-studios-uk/pigeon-driveby-rules) | Sets who can shoot from vehicles, from which seats, up to what speed, with which weapons and in which vehicles |
 | [**Pigeon Engine**](https://github.com/pigeon-studios-uk/pigeon-engine) | Start and stop engines with a key, keep them running when you get out, and leave the wheels turned |
+| [**Pigeon Lean Out**](https://github.com/pigeon-studios-uk/pigeon-lean-out) | Lets passengers lean out of the window and shoot all the way round, with any weapon you allow |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
