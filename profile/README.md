@@ -33,6 +33,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Engine**](https://github.com/pigeon-studios-uk/pigeon-engine) | Start and stop engines with a key, keep them running when you get out, and leave the wheels turned |
 | [**Pigeon Lean Out**](https://github.com/pigeon-studios-uk/pigeon-lean-out) | Lets passengers lean out of the window and shoot all the way round, with any weapon you allow |
 | [**Pigeon Notes**](https://github.com/pigeon-studios-uk/pigeon-notes) | Write notes and leave them on walls, tables and floors for other players to find and read |
+| [**Pigeon Seatbelt**](https://github.com/pigeon-studios-uk/pigeon-seatbelt) | Buckle up with a key, or go through the windscreen in a crash, with a warning light and a chime |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
