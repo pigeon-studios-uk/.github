@@ -85,7 +85,7 @@ param(
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'PigeonCommon.ps1')
 $standards = Split-Path -Parent $PSScriptRoot
-$ciTemplatesRef = 'v1.4.0'
+$ciTemplatesRef = 'v1.4.1'
 $reposRoot = 'D:\PigeonStudios\Repos'
 
 # --- 1. Names -------------------------------------------------------------------------------------

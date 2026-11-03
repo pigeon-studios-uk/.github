@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.13.1] - 2026-11-03
+
+### Changed
+
+- New projects use CI Templates 1.4.1, whose release jobs retry once by themselves.
+
 ## [2.13.0] - 2026-11-03
 
 One command for each step of a project's life, safe to run again, and nothing empty is ever public.
