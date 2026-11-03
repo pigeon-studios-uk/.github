@@ -442,7 +442,9 @@ if ((Test-Path -LiteralPath $manifestFile) -and [System.IO.File]::ReadAllText($m
 if ((Test-Path -LiteralPath $manifestFile) -and [System.IO.File]::ReadAllText($manifestFile, $utf8) -notmatch '(?m)^\s*pigeon_slug') {
     $todo.Add("Update checker: add pigeon_slug '$path' to fxmanifest.lua.")
 }
-$images = [regex]::Matches([System.IO.File]::ReadAllText((Join-Path $localFolder 'README.md'), $utf8), '<img src="(?!https?:)([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
+# Only the images that aren't there yet: a folder written before this ran may already have its banner.
+$images = [regex]::Matches([System.IO.File]::ReadAllText((Join-Path $localFolder 'README.md'), $utf8), '<img src="(?!https?:)([^"]+)"') |
+    ForEach-Object { $_.Groups[1].Value } | Where-Object { -not (Test-Path -LiteralPath (Join-Path $localFolder $_)) }
 if ($images) {
     $todo.Add("Images: the README shows $($images -join ' and '), which don't exist yet. The links check warns until the first tag, which fails without them. Banners are drawn as in the handbook's Brand and icons.")
 }
@@ -456,7 +458,11 @@ if ($Kind -eq 'Paid') {
     $todo.Add("Releases -> Tebex: create fivem/releases/tebex/$path when the first release ships, and the Cfx.re asset 'PS - $Name'.")
     $todo.Add("After the first release, add the Tebex store link to resources/$path.json in Pigeon Versions.")
 }
-$todo.Add('Fill in the README, CHANGELOG and docs placeholders listed above, then commit.')
+$placeholders = Get-ChildItem -LiteralPath $localFolder -Recurse -File -Include *.md, *.lua |
+    Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and [System.IO.File]::ReadAllText($_.FullName, $utf8) -match '\{\{[A-Z_]+\}\}' }
+if ($placeholders) {
+    $todo.Add("Fill in the placeholders ({{...}}) in $(($placeholders | ForEach-Object { $_.FullName.Substring($localFolder.Length + 1) }) -join ', '), then commit.")
+}
 
 Write-Host ''
 Write-Host 'Still to do:' -ForegroundColor Cyan

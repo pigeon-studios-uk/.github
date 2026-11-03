@@ -4,6 +4,13 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.13.3] - 2026-11-03
+
+### Fixed
+
+- `New-PigeonProject.ps1` listed every image the README shows as still to add, even ones already in the folder, and always asked to fill in placeholders. It now lists only the images that are missing, and the files that still have `{{...}}` placeholders, if any.
+- `Publish-PigeonProject.ps1` sends GitHub lower-case topics. GitLab can hand back a topic with capitals (`ESX`, `Standalone`) when another project made it first, and GitHub only takes lower case.
+
 ## [2.13.2] - 2026-11-03
 
 ### Fixed

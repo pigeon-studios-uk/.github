@@ -73,7 +73,9 @@ $sentence = if ($manifest -and $manifest -match "(?m)^\s*description\s+'((?:[^'\
 elseif ($package) { ($package | ConvertFrom-Json).description }
 if (-not $sentence) { throw 'No description in fxmanifest.lua or package.json, which the GitHub About panel needs.' }
 $githubDescription = "$($sentence.TrimEnd('.')). Free."
-$githubTopics = @((@($project.topics | Where-Object { $_ -notin 'fivem', 'free', 'github' }) + 'pigeonstudios-release') | Sort-Object -Unique)
+# GitHub only takes lower-case topics, and GitLab reuses the capitals of a topic another project made first
+# ("ESX", "Standalone").
+$githubTopics = @((@($project.topics | ForEach-Object { $_.ToLower() } | Where-Object { $_ -notin 'fivem', 'free', 'github' }) + 'pigeonstudios-release') | Sort-Object -Unique)
 Write-Host "  GitHub about      $githubDescription"
 Write-Host "  GitHub topics     $($githubTopics -join ', ')"
 
