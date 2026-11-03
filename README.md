@@ -93,16 +93,16 @@ Use the setup script, which copies the right files, fills in the placeholders yo
 
 ```powershell
 # A free FiveM resource on GitHub
-.\tools\New-PigeonRepo.ps1 -Path D:\Git\GitHub\pigeon-dice -Kind Free -Name "Pigeon Dice" -Description "Roleplay dice rolling with cooldowns and chat output."
+.\tools\New-PigeonRepo.ps1 -Path D:\PigeonStudios\Repos\fivem\releases\github\pigeon-dice -Kind Free -Name "Pigeon Dice" -Description "Roleplay dice rolling with cooldowns and chat output."
 
 # A free Discord bot on GitHub
-.\tools\New-PigeonRepo.ps1 -Path D:\Git\GitHub\monday-discord-relay -Kind Free -Type General -Name "Monday Discord Relay"
+.\tools\New-PigeonRepo.ps1 -Path D:\PigeonStudios\Repos\tools\monday-discord-relay -Kind Free -Type General -Name "Monday Discord Relay"
 
-# A paid resource on GitHub
-.\tools\New-PigeonRepo.ps1 -Path D:\Git\GitHub\psg-citizenportal -Kind Paid -Name "Citizen Portal"
+# A paid resource on GitLab
+.\tools\New-PigeonRepo.ps1 -Path D:\PigeonStudios\Repos\fivem\dev-releases\pg-citizenportal -Kind Paid -Platform GitLab -Name "Citizen Portal"
 
 # An internal bot on GitLab
-.\tools\New-PigeonRepo.ps1 -Path D:\Git\GitLabs\flightpath-systems -Kind Internal -Platform GitLab -Name "FlightPath Systems"
+.\tools\New-PigeonRepo.ps1 -Path D:\PigeonStudios\Repos\bots\flightpath-systems -Kind Internal -Platform GitLab -Name "FlightPath Systems"
 ```
 
 Run `Get-Help .\tools\New-PigeonRepo.ps1 -Full` for every option. Afterwards:

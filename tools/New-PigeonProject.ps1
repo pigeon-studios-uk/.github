@@ -4,13 +4,17 @@
     project and, for free projects, the GitHub repository and its mirror.
 
 .DESCRIPTION
-    Does every step of the handbook's new-project checklist that can be done from the PC:
+    Does every step of the handbook's new-project checklist that can be done from the PC. Before changing
+    anything, even with -DryRun, it checks that the update checker can be downloaded and, for each token that
+    is set, that the token works, has the access it needs and isn't near its expiry, that SSH to GitLab works,
+    and that the GitLab project and GitHub repository don't exist yet.
 
     1. Works out the names: the GitLab area, the path (pg-<slug> for paid resources, pigeon-<slug> for free
        FiveM resources), the local folder under D:\PigeonStudios\Repos and the version registry slug.
     2. Copies the standard files with New-PigeonRepo.ps1 (-Platform GitHub for free projects, which use the
        organisation's shared policies there, and -Platform GitLab for the rest).
-    3. For FiveM resources, writes a starting fxmanifest.lua with version 0.1.0 and the registry slug.
+    3. For FiveM resources, writes a starting fxmanifest.lua with version 0.1.0 and the registry slug, and
+       copies the update checker from Pigeon Versions to server/version_check.lua.
     4. Writes .gitlab-ci.yml with the shared checks and release jobs, keeps CI files out of release zips and,
        for free FiveM resources, writes the GitHub CI and release workflows.
     5. Makes the first commit (as Pigeon) and points origin at GitLab.
@@ -23,8 +27,8 @@
        access, and pushes the mirror once to check it works.
 
     It then lists what's left to do by hand: the icon if -Icon wasn't given, the banner, and the lists of
-    free resources in the handbook and Repo Standards. The website's webhook is added by the site plugin on
-    its next refresh, and the version registry entry by the first release's publish job.
+    free resources in the handbook and Repo Standards, and the website's webhook. The version registry entry
+    is added by the first release's publish job.
 
 .PARAMETER Name
     The product name, as people read it: "Shrike", "Pigeon Dice", "ROCKDOVE Vending".
@@ -90,7 +94,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $standards = Split-Path -Parent $PSScriptRoot
-$ciTemplatesRef = 'v1.2.0'
+$ciTemplatesRef = 'v1.3.0'
 $org = 'pigeon-studios-uk'
 $reposRoot = 'D:\PigeonStudios\Repos'
 
@@ -159,6 +163,90 @@ if ($githubSetup) {
         if (-not (Test-Path -LiteralPath (Join-Path $Handbook "github\rulesets\$file"))) { throw "The handbook's github\rulesets\$file isn't in $Handbook. Clone the handbook or pass -Handbook." }
     }
 }
+
+# Bodies go as UTF-8 bytes: Windows PowerShell would otherwise send them in the ANSI code page. The comma
+# returns the bytes as one array; without it PowerShell unrolls them into a list of numbers, which
+# Invoke-RestMethod sends as text ("123 34 ...") and the API rejects as invalid JSON.
+function ConvertTo-Body($body) {
+    if ($null -eq $body) { return $null }
+    $json = if ($body -is [string]) { $body } else { $body | ConvertTo-Json -Depth 10 }
+    , [System.Text.Encoding]::UTF8.GetBytes($json)
+}
+
+$api = 'https://gitlab.com/api/v4'
+$headers = @{ 'PRIVATE-TOKEN' = $env:GITLAB_TOKEN }
+function Invoke-GitLab([string] $method, [string] $uri, $body) {
+    Invoke-RestMethod -Method $method -Uri "$api$uri" -Headers $headers -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body)
+}
+
+$ghHeaders = @{
+    Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = 'application/vnd.github+json'
+    'X-GitHub-Api-Version' = '2022-11-28'; 'User-Agent' = 'New-PigeonProject'
+}
+function Invoke-GitHub([string] $method, [string] $uri, $body) {
+    Invoke-RestMethod -Method $method -Uri "https://api.github.com$uri" -Headers $ghHeaders -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body)
+}
+
+# PowerShell carries on when a native command fails, so every git call checks its own exit code.
+function Invoke-Git {
+    & git @args
+    if ($LASTEXITCODE -ne 0) { throw "git $args failed with exit code $LASTEXITCODE." }
+}
+
+# A read-only request that reports a 4xx instead of stopping: its status, headers and body as text.
+function Get-Url([string] $uri, [hashtable] $requestHeaders) {
+    try {
+        $response = Invoke-WebRequest -Uri $uri -Headers $requestHeaders -UseBasicParsing
+        [pscustomobject]@{ Status = [int] $response.StatusCode; Headers = $response.Headers; Content = $response.Content }
+    } catch [System.Net.WebException] {
+        if (-not $_.Exception.Response) { throw "Couldn't reach ${uri}: $($_.Exception.Message)" }
+        [pscustomobject]@{ Status = [int] $_.Exception.Response.StatusCode; Headers = @{}; Content = '' }
+    }
+}
+
+function Show-TokenExpiry([string] $token, [string] $date) {
+    if (-not $date) { Write-Host "  $token works and doesn't expire."; return }
+    $days = ([datetime]::Parse($date.Substring(0, 10)) - (Get-Date).Date).Days
+    if ($days -le 30) { Write-Host "  $token works, but expires on $($date.Substring(0, 10)), in $days days. Replace it soon." -ForegroundColor Yellow }
+    else { Write-Host "  $token works, and expires on $($date.Substring(0, 10))." }
+}
+
+# --- Checks before anything changes ---------------------------------------------------------------
+
+# The master copy of the update checker, kept byte for byte: every resource ships the identical file.
+$checkerBytes = $null
+if ($Type -eq 'FiveM') {
+    $checkerUrl = "https://raw.githubusercontent.com/$org/pigeon-versions/main/checker/version_check.lua"
+    $checkerBytes = (Invoke-WebRequest -Uri $checkerUrl -UseBasicParsing).RawContentStream.ToArray()
+    if ([System.Text.Encoding]::UTF8.GetString($checkerBytes) -notmatch 'CHECKER_VERSION') { throw "$checkerUrl isn't the update checker." }
+}
+
+if ($env:GITLAB_TOKEN) {
+    $self = Get-Url "$api/personal_access_tokens/self" $headers
+    if ($self.Status -ne 200) { throw "GitLab refused GITLAB_TOKEN (HTTP $($self.Status)). It may have expired or been revoked; make a new one (handbook: Starting a new project)." }
+    $tokenInfo = $self.Content | ConvertFrom-Json
+    if ($tokenInfo.scopes -notcontains 'api') { throw "GITLAB_TOKEN has the scopes '$($tokenInfo.scopes -join ', ')'. It needs api." }
+    Show-TokenExpiry 'GitLab token' $tokenInfo.expires_at
+
+    if ((Get-Url "$api/namespaces/$([uri]::EscapeDataString($namespace))" $headers).Status -ne 200) { throw "GITLAB_TOKEN can't see the GitLab group $namespace." }
+    $existing = (Get-Url "$api/projects/$([uri]::EscapeDataString("$namespace/$path"))" $headers).Status
+    if ($existing -ne 404) { throw "$gitlabUrl already exists (HTTP $existing). Choose another slug." }
+
+    & git ls-remote --heads git@gitlab.com:pigeon-studios/repo-standards.git main | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "Can't reach GitLab over SSH, so the first push would fail. Check the key in ~/.ssh (handbook: Working locally)." }
+}
+
+if ($githubSetup) {
+    # Deploy keys need Administration, which an unapproved or wrongly scoped token doesn't have.
+    $keys = Get-Url "https://api.github.com/repos/$org/.github/keys" $ghHeaders
+    if ($keys.Status -eq 401) { throw "GitHub refused GITHUB_TOKEN. It may have expired or been revoked; make a new one (handbook: Starting a new project)." }
+    if ($keys.Status -ne 200) { throw "GITHUB_TOKEN can't administer $org (HTTP $($keys.Status)). It needs resource owner $org, all repositories and Administration read and write, and the organisation must have approved it." }
+    Show-TokenExpiry 'GitHub token' $keys.Headers['github-authentication-token-expiration']
+
+    $existing = (Get-Url "https://api.github.com/repos/$org/$path" $ghHeaders).Status
+    if ($existing -ne 404) { throw "$githubUrl already exists (HTTP $existing). Choose another slug." }
+}
+
 if ($DryRun) { Write-Host 'Dry run: nothing changed.' -ForegroundColor Yellow; return }
 
 # --- 2. Standard files ----------------------------------------------------------------------------
@@ -203,6 +291,8 @@ author 'Pigeon Studios'
 description '$($Description.Replace("'", "\'"))'
 version '0.1.0'
 repository '$(if ($githubUrl) { $githubUrl } else { 'https://pigeonstudios.co.uk' })'
+
+-- Pigeon Studios version registry entry, read by server/version_check.lua.
 pigeon_slug '$path'
 
 shared_scripts {
@@ -212,8 +302,12 @@ client_scripts {
 }
 
 server_scripts {
+    'server/version_check.lua',
 }
 "@
+    New-Item -ItemType Directory -Path (Join-Path $localFolder 'server') | Out-Null
+    [System.IO.File]::WriteAllBytes((Join-Path $localFolder 'server\version_check.lua'), $checkerBytes)
+    Write-Host '  write  server/version_check.lua (the update checker, from Pigeon Versions)' -ForegroundColor Green
 }
 
 # Bots and tools are Node.js projects; package.json carries their version for the shared checks.
@@ -251,7 +345,7 @@ include:
     file:
       - templates/checks.yml
       - templates/release.yml
-$(if ($Kind -eq 'Free') { "`n# free: publish to the registry, Discord and GitHub Discussions as soon as a tag passes." })
+$(if ($Kind -eq 'Free') { "`n# free: once a tag passes and its GitHub release is out, publish to the registry and GitHub Discussions." })
 variables:
   PS_RELEASE_KIND: $releaseKind
 
@@ -305,9 +399,9 @@ jobs:
       - name: Manifest version matches the latest changelog entry
         run: |
           manifest=$(sed -n "s/^version '\(.*\)'$/\1/p" fxmanifest.lua)
-          changelog=$(grep -m1 -oP '^## \[\K[0-9][^]]*' CHANGELOG.md)
-          echo "fxmanifest.lua: $manifest  CHANGELOG.md: $changelog"
-          [ "$manifest" = "$changelog" ]
+          changelog=$(perl -0pe 's/<!--.*?-->//gs' CHANGELOG.md | grep -m1 -oP '^## \[\K[0-9][^]]*' || true)
+          echo "fxmanifest.lua: $manifest  CHANGELOG.md: ${changelog:-nothing released yet}"
+          [ -z "$changelog" ] || [ "$manifest" = "$changelog" ]
 '@
     Write-Text '.github/workflows/release.yml' (@'
 name: Release
@@ -346,12 +440,12 @@ jobs:
       - name: Extract release notes from CHANGELOG.md
         run: |
           version="${GITHUB_REF_NAME#v}"
-          awk -v v="$version" '
+          perl -0pe 's/<!--.*?-->//gs' CHANGELOG.md | awk -v v="$version" '
             index($0, "## [" v "]") == 1 { found = 1; next }
             found && /^## \[/ { exit }
             found && /^\[.*\]: / { exit }
             found { print }
-          ' CHANGELOG.md > notes.md
+          ' > notes.md
           [ -s notes.md ] || { echo "No CHANGELOG.md section for $version"; exit 1; }
 
       - name: Build {{PATH}}.zip
@@ -368,26 +462,17 @@ jobs:
 
 Push-Location $localFolder
 try {
-    git init --quiet -b main
-    git add -A
-    git -c user.name=Pigeon -c user.email=pigeonstudiosllc@gmail.com commit --quiet -m "Start $Name"
-    git remote add origin "git@gitlab.com:$namespace/$path.git"
+    Invoke-Git init --quiet -b main
+    Invoke-Git add -A
+    Invoke-Git -c user.name=Pigeon -c user.email=pigeonstudiosllc@gmail.com commit --quiet -m "Start $Name"
+    Invoke-Git remote add origin "git@gitlab.com:$namespace/$path.git"
     if ($Kind -eq 'Free') {
         # Free projects are pushed to GitLab only; GitLab mirrors them to GitHub.
-        git remote add github "https://github.com/$org/$path.git"
-        git remote set-url --push github 'DISABLED: push to GitLab (origin); it mirrors to GitHub'
+        Invoke-Git remote add github "https://github.com/$org/$path.git"
+        Invoke-Git remote set-url --push github 'DISABLED: push to GitLab (origin); it mirrors to GitHub'
     }
 } finally { Pop-Location }
 Write-Host '  First commit made.' -ForegroundColor Green
-
-# Bodies go as UTF-8 bytes: Windows PowerShell would otherwise send them in the ANSI code page. The comma
-# returns the bytes as one array; without it PowerShell unrolls them into a list of numbers, which
-# Invoke-RestMethod sends as text ("123 34 ...") and the API rejects as invalid JSON.
-function ConvertTo-Body($body) {
-    if ($null -eq $body) { return $null }
-    $json = if ($body -is [string]) { $body } else { $body | ConvertTo-Json -Depth 10 }
-    , [System.Text.Encoding]::UTF8.GetBytes($json)
-}
 
 # --- 6. GitLab project ----------------------------------------------------------------------------
 
@@ -395,12 +480,6 @@ $todo = New-Object System.Collections.Generic.List[string]
 $project = $null
 
 if ($env:GITLAB_TOKEN) {
-    $api = 'https://gitlab.com/api/v4'
-    $headers = @{ 'PRIVATE-TOKEN' = $env:GITLAB_TOKEN }
-    function Invoke-GitLab([string] $method, [string] $uri, $body) {
-        Invoke-RestMethod -Method $method -Uri "$api$uri" -Headers $headers -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body)
-    }
-
     $ns = Invoke-GitLab GET "/namespaces/$([uri]::EscapeDataString($namespace))"
     $project = Invoke-GitLab POST '/projects' @{
         name = $Name; path = $path; namespace_id = $ns.id; description = $gitlabDescription; topics = $allTopics
@@ -430,7 +509,7 @@ if ($env:GITLAB_TOKEN) {
     }
 
     Push-Location $localFolder
-    try { git push --quiet -u origin main } finally { Pop-Location }
+    try { Invoke-Git push --quiet -u origin main } finally { Pop-Location }
     Write-Host '  Pushed. The first pipeline runs the shared checks.' -ForegroundColor Green
 } else {
     $todo.Add("Create the GitLab project: set `$env:GITLAB_TOKEN and run this again on a fresh folder, or push (git push -u origin main) and set the description, topics, protected v* tags and settings by hand, as in the handbook's checklist.")
@@ -439,14 +518,6 @@ if ($env:GITLAB_TOKEN) {
 # --- 7. GitHub repository and mirror --------------------------------------------------------------
 
 if ($githubSetup) {
-    $ghHeaders = @{
-        Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = 'application/vnd.github+json'
-        'X-GitHub-Api-Version' = '2022-11-28'; 'User-Agent' = 'New-PigeonProject'
-    }
-    function Invoke-GitHub([string] $method, [string] $uri, $body) {
-        Invoke-RestMethod -Method $method -Uri "https://api.github.com$uri" -Headers $ghHeaders -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body)
-    }
-
     Invoke-GitHub POST "/orgs/$org/repos" @{
         name = $path; description = $githubDescription; homepage = 'https://pigeonstudios.co.uk/free/'
         private = $false; auto_init = $false
@@ -502,7 +573,7 @@ if ($Kind -eq 'Free') {
     if ($Type -ne 'FiveM') {
         $todo.Add('GitHub workflows: copy .github/workflows/ci.yml and release.yml from an existing General free project (Monday to Discord), so tags build the release on GitHub.')
     }
-    $todo.Add('Website: WordPress admin -> GitHub -> Refresh now. The site plugin adds its webhook to the new repository by itself and lists it on the Free releases page.')
+    $todo.Add('Website: in WordPress admin -> GitHub, press Refresh now to list it on the Free releases page straight away (otherwise within the hour), then Set up webhooks on every repository to add its webhook.')
     $todo.Add("Lists of free resources: the GitHub, CI and studio layout tables in the handbook, and the profile table and Q&A and Ideas dropdowns in Repo Standards.")
 }
 if ($Kind -eq 'Paid') {

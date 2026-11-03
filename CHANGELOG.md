@@ -4,6 +4,24 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.12.0] - 2026-11-03
+
+### Added
+
+- `New-PigeonProject.ps1` copies the update checker from Pigeon Versions to `server/version_check.lua` and loads it in `fxmanifest.lua`, so a new resource checks for updates from its first release.
+- `New-PigeonProject.ps1` checks everything it can before changing anything, including with `-DryRun`: that each token works, has the access it needs and how long it has left (with a warning at 30 days), that SSH to GitLab works, and that the GitLab project and GitHub repository don't exist yet.
+
+### Changed
+
+- New projects use CI Templates 1.3.0, whose `publish` waits for a free release's GitHub release.
+
+### Fixed
+
+- The GitHub CI that `New-PigeonProject.ps1` writes failed on every new repository's first push: it read a version from the example inside the CHANGELOG's comment. It now ignores comments and passes until the first release, and `release.yml` leaves comments out of the release notes.
+- A failed `git` command no longer goes unnoticed; "Pushed" used to show even if the push failed.
+- The list of what's left to do says how the website's webhook is really added.
+- The README's examples use the `D:\PigeonStudios\Repos` folders.
+
 ## [2.11.0] - 2026-11-03
 
 ### Added
