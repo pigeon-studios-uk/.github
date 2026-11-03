@@ -94,7 +94,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $standards = Split-Path -Parent $PSScriptRoot
-$ciTemplatesRef = 'v1.3.0'
+$ciTemplatesRef = 'v1.3.1'
 $org = 'pigeon-studios-uk'
 $reposRoot = 'D:\PigeonStudios\Repos'
 
@@ -564,7 +564,7 @@ if (-not $Icon) {
 }
 $images = [regex]::Matches([System.IO.File]::ReadAllText((Join-Path $localFolder 'README.md'), $utf8), '<img src="(?!https?:)([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
 if ($images) {
-    $todo.Add("Images: the README shows $($images -join ' and '), which don't exist yet, so the links check fails until they're added. Banners are drawn as in the handbook's Brand and icons.")
+    $todo.Add("Images: the README shows $($images -join ' and '), which don't exist yet. The links check warns until the first tag, which fails without them. Banners are drawn as in the handbook's Brand and icons.")
 }
 if ($Kind -eq 'Free') {
     if (-not $githubSetup) {

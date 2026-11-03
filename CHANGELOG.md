@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.12.1] - 2026-11-03
+
+### Changed
+
+- New projects use CI Templates 1.3.1, so their first pipeline no longer fails because the banner hasn't been drawn.
+
 ## [2.12.0] - 2026-11-03
 
 ### Added
