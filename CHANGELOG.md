@@ -1,8 +1,23 @@
 # Changelog
 
-All notable changes to the Pigeon Studios repository standards are documented here. Each policy and licence carries its own version line; this file records what changed and when.
+All notable changes to the Pigeon Studios repository standards are documented here. Each policy and licence carries its own version line; this file records what changed and when. A free project's first release adds it to the organisation profile and the Q&A and Ideas forms by itself; those commits are lists, not policy changes, so they don't get a version or an entry here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [2.13.0] - 2026-11-03
+
+One command for each step of a project's life, safe to run again, and nothing empty is ever public.
+
+### Added
+
+- `tools/Publish-PigeonProject.ps1` makes a free project public from GitLab, with no local copy: the GitHub repository, rulesets, mirror, deploy key and badge. It refuses a project with placeholders in its README, images that don't exist or no release workflow.
+- `tools/Release-PigeonProject.ps1` releases a project from GitLab, with no local copy: it moves Unreleased into a dated section, sets the version, waits for the checks, and only then tags.
+- `tools/Set-PigeonToken.ps1` saves the GitLab and GitHub tokens in Windows Credential Manager, so they last between sessions without being in a file. An environment variable still overrides them.
+
+### Changed
+
+- `New-PigeonProject.ps1` only makes the private GitLab project; the GitHub side moved to `Publish-PigeonProject.ps1`. It works in a folder where the resource is already written, never overwrites a file, and can be run again after a failure.
+- New projects use CI Templates 1.4.0.
 
 ## [2.12.1] - 2026-11-03
 
