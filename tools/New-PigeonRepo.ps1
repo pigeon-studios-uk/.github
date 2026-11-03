@@ -41,13 +41,13 @@
     Overwrite files that already exist.
 
 .EXAMPLE
-    .\tools\New-PigeonRepo.ps1 -Path D:\Git\GitHub\pigeon-dice -Kind Free -Name "Pigeon Dice" -Description "Roleplay dice rolling with cooldowns and chat output."
+    .\tools\New-PigeonRepo.ps1 -Path D:\PigeonStudios\Repos\fivem\releases\github\pigeon-dice -Kind Free -Name "Pigeon Dice" -Description "Roleplay dice rolling with cooldowns and chat output."
 
 .EXAMPLE
-    .\tools\New-PigeonRepo.ps1 -Path D:\Git\GitLabs\flightpath-systems -Kind Internal -Platform GitLab -Name "FlightPath Systems"
+    .\tools\New-PigeonRepo.ps1 -Path D:\PigeonStudios\Repos\tools\flightpath-systems -Kind Internal -Platform GitLab -Name "FlightPath Systems"
 
 .EXAMPLE
-    .\tools\New-PigeonRepo.ps1 -Path D:\Git\GitHub\monday-discord-relay -Kind Free -Type General -Name "Monday Discord Relay"
+    .\tools\New-PigeonRepo.ps1 -Path D:\PigeonStudios\Repos\tools\monday-discord-relay -Kind Free -Type General -Name "Monday Discord Relay"
 #>
 [CmdletBinding(SupportsShouldProcess)]
 param(

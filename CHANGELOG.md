@@ -4,6 +4,25 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.10.0] - 2026-11-03
+
+### Added
+
+- `New-PigeonProject.ps1` sets up the GitHub side of a free project when `$env:GITHUB_TOKEN` is set alongside `$env:GITLAB_TOKEN`: the public repository with its description ("… Free."), the Free releases page as its website and its topics (with `pigeonstudios-release`), both rulesets from the handbook, the GitLab push mirror over SSH with GitHub's host keys and keep divergent refs, the mirror's deploy key with write access, and one mirror push to check it works.
+- `-Icon` uploads the project's icon as the GitLab avatar.
+- Free FiveM resources get the GitHub `ci.yml` (every Lua file compiles, the manifest version matches the CHANGELOG) and `release.yml` (builds `<path>.zip` from the tag and publishes the release), as the released free resources have.
+
+### Changed
+
+- New projects go under `D:\PigeonStudios\Repos`, laid out like GitLab (`fivem\releases\github\pigeon-<slug>`, `fivem\dev-releases\pg-<slug>`, `tools\<slug>`), instead of `D:\Git`.
+- Free projects get the GitHub set of standard files, like the released free repositories, with the policies coming from the organisation's `.github`, instead of their own GitLab copies.
+- The GitLab badge on free projects shows the latest GitHub release, like the existing free projects, and `.gitattributes` keeps tests and CI files out of release zips in the same block they use.
+
+### Fixed
+
+- A description starting with a one-letter word ("A fishing job…") is now lower-cased after the product name, like any other.
+- Files the script writes end with a newline.
+
 ## [2.9.0] - 2026-11-03
 
 ### Added

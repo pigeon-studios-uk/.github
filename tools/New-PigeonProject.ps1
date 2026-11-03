@@ -1,22 +1,30 @@
 <#
 .SYNOPSIS
-    Starts a new Pigeon Studios project: the folder, the standard files, CI, the first commit and the GitLab project.
+    Starts a new Pigeon Studios project: the folder, the standard files, CI, the first commit, the GitLab
+    project and, for free projects, the GitHub repository and its mirror.
 
 .DESCRIPTION
     Does every step of the handbook's new-project checklist that can be done from the PC:
 
     1. Works out the names: the GitLab area, the path (pg-<slug> for paid resources, pigeon-<slug> for free
-       FiveM resources), the local folder under D:\Git and the version registry slug.
-    2. Copies the standard files with New-PigeonRepo.ps1 (-Platform GitLab).
+       FiveM resources), the local folder under D:\PigeonStudios\Repos and the version registry slug.
+    2. Copies the standard files with New-PigeonRepo.ps1 (-Platform GitHub for free projects, which use the
+       organisation's shared policies there, and -Platform GitLab for the rest).
     3. For FiveM resources, writes a starting fxmanifest.lua with version 0.1.0 and the registry slug.
-    4. Writes .gitlab-ci.yml with the shared checks and release jobs, and keeps CI files out of release zips.
+    4. Writes .gitlab-ci.yml with the shared checks and release jobs, keeps CI files out of release zips and,
+       for free FiveM resources, writes the GitHub CI and release workflows.
     5. Makes the first commit (as Pigeon) and points origin at GitLab.
     6. With a GitLab token in $env:GITLAB_TOKEN: creates the GitLab project with the studio's settings
-       (description, topics, features off, protected v* tags, a GitHub badge for free projects) and pushes.
-       Without one, it stops before pushing and prints how to finish.
+       (description, topics, features off, protected v* tags, a GitHub badge for free projects, the icon
+       given with -Icon) and pushes. Without one, it stops before pushing and prints how to finish.
+    7. For free projects, with a GitHub token in $env:GITHUB_TOKEN as well: creates the public GitHub
+       repository (description, website, topics), imports the two rulesets from the handbook, creates the
+       GitLab push mirror over SSH with GitHub's host keys, adds the mirror's key as a deploy key with write
+       access, and pushes the mirror once to check it works.
 
-    It then lists what's left to do by hand: the icon, and for free projects the GitHub repository and mirror.
-    The version registry entry is made by the first release's publish job.
+    It then lists what's left to do by hand: the icon if -Icon wasn't given, the banner, and the lists of
+    free resources in the handbook and Repo Standards. The website's webhook is added by the site plugin on
+    its next refresh, and the version registry entry by the first release's publish job.
 
 .PARAMETER Name
     The product name, as people read it: "Shrike", "Pigeon Dice", "ROCKDOVE Vending".
@@ -34,16 +42,29 @@
     Where a General or Internal project goes on GitLab: Bots, Tools or Web. FiveM projects don't need it.
 
 .PARAMETER Description
-    One sentence for the README and the GitLab description, without the product name or "Paid"/"Free".
+    One sentence for the README and the descriptions, without the product name or "Paid"/"Free".
 
 .PARAMETER Topics
-    Extra GitLab topics, such as "systems-scripts" or "nodejs". The kind and platform topics are added for you.
+    Extra topics for GitLab and GitHub, such as "roleplay", "standalone", "qbox" or "nodejs". The website
+    reads frameworks from the GitHub topics (standalone, qbox, qbcore, esx). The kind and platform topics,
+    and pigeonstudios-release on GitHub, are added for you.
+
+.PARAMETER Icon
+    A 384 px PNG of the project's icon (from the handbook's brand/icons) to upload as the GitLab avatar.
+
+.PARAMETER Handbook
+    The local handbook clone, for the GitHub rulesets. Defaults to D:\PigeonStudios\Repos\handbook.
 
 .PARAMETER Folder
-    Use another local folder instead of the usual one under D:\Git (for trying the script out).
+    Use another local folder instead of the usual one under D:\PigeonStudios\Repos (for trying the script out).
 
 .PARAMETER DryRun
     Print what would happen and change nothing.
+
+.EXAMPLE
+    $env:GITLAB_TOKEN = '<GitLab personal access token, api scope>'
+    $env:GITHUB_TOKEN = '<fine-grained token owned by pigeon-studios-uk: all repositories, Administration read and write>'
+    .\tools\New-PigeonProject.ps1 -Name 'Pigeon Notes' -Slug notes -Kind Free -Description 'Sticky notes players can leave around the map.' -Topics roleplay, standalone -Icon D:\icons\pigeon-notes.png
 
 .EXAMPLE
     $env:GITLAB_TOKEN = '<a personal access token with the api scope>'
@@ -61,6 +82,8 @@ param(
     [ValidateSet('Bots', 'Tools', 'Web')] [string] $Area,
     [Parameter(Mandatory)] [string] $Description,
     [string[]] $Topics = @(),
+    [string] $Icon,
+    [string] $Handbook = 'D:\PigeonStudios\Repos\handbook',
     [string] $Folder,
     [switch] $DryRun
 )
@@ -69,19 +92,24 @@ $ErrorActionPreference = 'Stop'
 $standards = Split-Path -Parent $PSScriptRoot
 $ciTemplatesRef = 'v1.2.0'
 $org = 'pigeon-studios-uk'
+$reposRoot = 'D:\PigeonStudios\Repos'
 
 # --- 1. Names -------------------------------------------------------------------------------------
 
 if ($Kind -eq 'Paid') { $Type = 'FiveM' }
 if ($Kind -eq 'Internal' -and $Type -eq 'FiveM') { throw 'Internal projects are General: use -Type General with -Area.' }
 if ($Type -eq 'General' -and -not $Area) { throw 'A General project needs -Area Bots, Tools or Web.' }
+if ($Icon -and -not (Test-Path -LiteralPath $Icon)) { throw "The icon $Icon doesn't exist." }
 
 switch ("$Kind/$Type") {
-    'Paid/FiveM'       { $path = "pg-$Slug";     $namespace = 'pigeon-studios/fivem/dev-releases';   $localFolder = "D:\Git\GitLabs\$path" }
-    'Free/FiveM'       { $path = "pigeon-$Slug"; $namespace = 'pigeon-studios/fivem/releases/github'; $localFolder = "D:\Git\GitHub\$path" }
-    'Free/General'     { $path = $Slug;          $namespace = "pigeon-studios/$($Area.ToLower())";   $localFolder = "D:\Git\GitHub\$path" }
-    'Internal/General' { $path = $Slug;          $namespace = "pigeon-studios/$($Area.ToLower())";   $localFolder = "D:\Git\GitLabs\$path" }
+    'Paid/FiveM'       { $path = "pg-$Slug";     $namespace = 'pigeon-studios/fivem/dev-releases' }
+    'Free/FiveM'       { $path = "pigeon-$Slug"; $namespace = 'pigeon-studios/fivem/releases/github' }
+    'Free/General'     { $path = $Slug;          $namespace = "pigeon-studios/$($Area.ToLower())" }
+    'Internal/General' { $path = $Slug;          $namespace = "pigeon-studios/$($Area.ToLower())" }
 }
+# Local folders mirror the GitLab layout: D:\PigeonStudios\Repos\fivem\releases\github\pigeon-dice.
+$groupPath = $namespace -replace '^pigeon-studios/', ''
+$localFolder = Join-Path $reposRoot (Join-Path ($groupPath -replace '/', '\') $path)
 if ($Folder) { $localFolder = $Folder }
 $releaseKind = $Kind.ToLower()
 $gitlabUrl = "https://gitlab.com/$namespace/$path"
@@ -93,12 +121,20 @@ $suffix = switch ($Kind) {
 }
 # "Shrike: a dash-mounted radar detector…": lower-case after the colon, unless it starts with a name like "GTA".
 $sentence = $Description.TrimEnd('.')
-if ($sentence -cmatch '^[A-Z][a-z]') { $sentence = $sentence.Substring(0, 1).ToLower() + $sentence.Substring(1) }
+if ($sentence -cmatch '^[A-Z]([a-z]|\s)') { $sentence = $sentence.Substring(0, 1).ToLower() + $sentence.Substring(1) }
 $gitlabDescription = "${Name}: $sentence. $suffix"
-$allTopics = @($Topics)
+$allTopics = @($Topics | ForEach-Object { $_.ToLower() })
 if ($Type -eq 'FiveM') { $allTopics += 'fivem', 'lua' }
 $allTopics += switch ($Kind) { 'Paid' { 'paid', 'tebex' } 'Free' { 'free', 'github' } 'Internal' { 'internal' } }
-$allTopics = $allTopics | Sort-Object -Unique
+$allTopics = @($allTopics | Sort-Object -Unique)
+
+# GitHub matches the released free repositories: "<sentence>. Free.", the Free releases page as the website,
+# and pigeonstudios-release, which marks our releases. fivem, free and github would only repeat the obvious.
+$githubDescription = "$($Description.TrimEnd('.')). Free."
+$githubTopics = @($Topics | ForEach-Object { $_.ToLower() })
+if ($Type -eq 'FiveM') { $githubTopics += 'lua' }
+$githubTopics = @(($githubTopics + 'pigeonstudios-release') | Sort-Object -Unique)
+$githubSetup = $githubUrl -and $env:GITLAB_TOKEN -and $env:GITHUB_TOKEN
 
 Write-Host ''
 Write-Host "  Product name      $Name"
@@ -106,25 +142,41 @@ Write-Host "  GitLab project    $gitlabUrl"
 Write-Host "  Local folder      $localFolder"
 if ($Type -eq 'FiveM') { Write-Host "  Resource folder   $path  (registry slug '$path')" }
 if ($Kind -eq 'Paid') { Write-Host "  Cfx.re asset      PS - $Name" }
-if ($githubUrl) { Write-Host "  GitHub            $githubUrl" }
 Write-Host "  Description       $gitlabDescription"
 Write-Host "  Topics            $($allTopics -join ', ')"
+if ($Icon) { Write-Host "  Icon              $Icon" }
+if ($githubUrl) {
+    Write-Host "  GitHub            $githubUrl$(if (-not $githubSetup) { '  (set GITLAB_TOKEN and GITHUB_TOKEN to create it)' })"
+    Write-Host "  GitHub about      $githubDescription"
+    Write-Host "  GitHub topics     $($githubTopics -join ', ')"
+}
 Write-Host "  Releases          $releaseKind"
 Write-Host ''
 
 if (Test-Path -LiteralPath $localFolder) { throw "$localFolder already exists. Choose another slug, or set up the existing folder by hand." }
+if ($githubSetup) {
+    foreach ($file in 'protect-main.json', 'protect-release-tags.json') {
+        if (-not (Test-Path -LiteralPath (Join-Path $Handbook "github\rulesets\$file"))) { throw "The handbook's github\rulesets\$file isn't in $Handbook. Clone the handbook or pass -Handbook." }
+    }
+}
 if ($DryRun) { Write-Host 'Dry run: nothing changed.' -ForegroundColor Yellow; return }
 
 # --- 2. Standard files ----------------------------------------------------------------------------
 
-& (Join-Path $PSScriptRoot 'New-PigeonRepo.ps1') -Path $localFolder -Kind $Kind -Platform GitLab -Type $Type -Name $Name -Folder $path -Description $Description
+# Free projects are read on GitHub, where the organisation's .github repository supplies the policies and
+# issue forms, so they get the GitHub set like the released free repositories. GitLab-only projects carry
+# their own copies, because GitLab Free has no shared defaults.
+$platform = if ($Kind -eq 'Free') { 'GitHub' } else { 'GitLab' }
+& (Join-Path $PSScriptRoot 'New-PigeonRepo.ps1') -Path $localFolder -Kind $Kind -Platform $platform -Type $Type -Name $Name -Folder $path -Description $Description
 
 $utf8 = New-Object System.Text.UTF8Encoding($false)
 function Write-Text([string] $file, [string] $text) {
     $target = Join-Path $localFolder $file
     $directory = Split-Path -Parent $target
     if (-not (Test-Path -LiteralPath $directory)) { New-Item -ItemType Directory -Path $directory | Out-Null }
-    [System.IO.File]::WriteAllText($target, $text.Replace("`r`n", "`n"), $utf8)
+    $text = $text.Replace("`r`n", "`n")
+    if (-not $text.EndsWith("`n")) { $text += "`n" }
+    [System.IO.File]::WriteAllText($target, $text, $utf8)
     Write-Host "  write  $file" -ForegroundColor Green
 }
 
@@ -199,7 +251,7 @@ include:
     file:
       - templates/checks.yml
       - templates/release.yml
-
+$(if ($Kind -eq 'Free') { "`n# free: publish to the registry, Discord and GitHub Discussions as soon as a tag passes." })
 variables:
   PS_RELEASE_KIND: $releaseKind
 
@@ -213,9 +265,103 @@ workflow:
 $attributes = Join-Path $localFolder '.gitattributes'
 $text = [System.IO.File]::ReadAllText($attributes, $utf8)
 if ($text -notmatch '(?m)^\.gitlab-ci\.yml\s') {
-    $text = $text.TrimEnd() + "`n.gitlab-ci.yml    export-ignore`n"
+    $text = $text.TrimEnd() + "`n`n# Development files, not needed on a server.`ntests/           export-ignore`n.gitlab-ci.yml   export-ignore`n.gitleaks.toml   export-ignore`n"
     [System.IO.File]::WriteAllText($attributes, $text, $utf8)
-    Write-Host '  edit   .gitattributes (.gitlab-ci.yml left out of release zips)' -ForegroundColor Green
+    Write-Host '  edit   .gitattributes (tests and CI files left out of release zips)' -ForegroundColor Green
+}
+
+# Free FiveM resources are released on GitHub: CI checks the Lua compiles, and a v* tag (mirrored from
+# GitLab) builds <path>.zip with git archive and publishes the release with the CHANGELOG section as notes.
+if ($Kind -eq 'Free' -and $Type -eq 'FiveM') {
+    Write-Text '.github/workflows/ci.yml' @'
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.4
+
+      - name: Check every Lua file compiles
+        run: |
+          for file in $(git ls-files '*.lua'); do
+            luac5.4 -p "$file" || exit 1
+          done
+
+      - name: Manifest version matches the latest changelog entry
+        run: |
+          manifest=$(sed -n "s/^version '\(.*\)'$/\1/p" fxmanifest.lua)
+          changelog=$(grep -m1 -oP '^## \[\K[0-9][^]]*' CHANGELOG.md)
+          echo "fxmanifest.lua: $manifest  CHANGELOG.md: $changelog"
+          [ "$manifest" = "$changelog" ]
+'@
+    Write-Text '.github/workflows/release.yml' (@'
+name: Release
+
+# Push a tag such as v1.0.0 to publish a release. The tag must match the version in fxmanifest.lua,
+# and CHANGELOG.md must have a section for it; its text becomes the release notes.
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.4
+
+      - name: Check every Lua file compiles
+        run: |
+          for file in $(git ls-files '*.lua'); do
+            luac5.4 -p "$file" || exit 1
+          done
+
+      - name: Check the tag matches fxmanifest.lua
+        run: |
+          manifest=$(sed -n "s/^version '\(.*\)'$/\1/p" fxmanifest.lua)
+          [ "v$manifest" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME doesn't match fxmanifest.lua version $manifest"; exit 1; }
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '
+            index($0, "## [" v "]") == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found && /^\[.*\]: / { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          [ -s notes.md ] || { echo "No CHANGELOG.md section for $version"; exit 1; }
+
+      - name: Build {{PATH}}.zip
+        run: git archive --format=zip --prefix={{PATH}}/ -o {{PATH}}.zip "$GITHUB_REF_NAME"
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" {{PATH}}.zip --title "{{NAME}} $GITHUB_REF_NAME" --notes-file notes.md
+'@).Replace('{{PATH}}', $path).Replace('{{NAME}}', $Name)
 }
 
 # --- 5. First commit ------------------------------------------------------------------------------
@@ -234,16 +380,23 @@ try {
 } finally { Pop-Location }
 Write-Host '  First commit made.' -ForegroundColor Green
 
+# Bodies go as UTF-8 bytes: Windows PowerShell would otherwise send them in the ANSI code page.
+function ConvertTo-Body($body) {
+    if ($null -eq $body) { return $null }
+    $json = if ($body -is [string]) { $body } else { $body | ConvertTo-Json -Depth 10 }
+    [System.Text.Encoding]::UTF8.GetBytes($json)
+}
+
 # --- 6. GitLab project ----------------------------------------------------------------------------
 
 $todo = New-Object System.Collections.Generic.List[string]
+$project = $null
 
 if ($env:GITLAB_TOKEN) {
     $api = 'https://gitlab.com/api/v4'
     $headers = @{ 'PRIVATE-TOKEN' = $env:GITLAB_TOKEN }
     function Invoke-GitLab([string] $method, [string] $uri, $body) {
-        $json = if ($body) { $body | ConvertTo-Json -Depth 5 } else { $null }
-        Invoke-RestMethod -Method $method -Uri "$api$uri" -Headers $headers -ContentType 'application/json' -Body $json
+        Invoke-RestMethod -Method $method -Uri "$api$uri" -Headers $headers -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body)
     }
 
     $ns = Invoke-GitLab GET "/namespaces/$([uri]::EscapeDataString($namespace))"
@@ -251,7 +404,8 @@ if ($env:GITLAB_TOKEN) {
         name = $Name; path = $path; namespace_id = $ns.id; description = $gitlabDescription; topics = $allTopics
         visibility = 'private'; initialize_with_readme = $false
         wiki_access_level = 'disabled'; snippets_access_level = 'disabled'; pages_access_level = 'disabled'
-        container_registry_access_level = 'disabled'; packages_enabled = $false
+        container_registry_access_level = 'disabled'; package_registry_access_level = 'disabled'
+        model_experiments_access_level = 'private'; model_registry_access_level = 'private'
     }
     Write-Host "  GitLab project created: $($project.web_url)" -ForegroundColor Green
 
@@ -261,9 +415,16 @@ if ($env:GITLAB_TOKEN) {
     if ($githubUrl) {
         Invoke-GitLab POST "/projects/$($project.id)/badges" @{
             name = 'GitHub'; link_url = $githubUrl
-            image_url = "https://img.shields.io/badge/GitHub-$($path.Replace('-', '--'))-181717?logo=github"
+            image_url = "https://img.shields.io/github/v/release/$org/$path"
         } | Out-Null
         Write-Host '  GitHub badge added.' -ForegroundColor Green
+    }
+
+    if ($Icon) {
+        # Invoke-RestMethod in Windows PowerShell can't send multipart forms, so curl.exe uploads the avatar.
+        $status = & curl.exe --silent --output NUL --write-out '%{http_code}' --request PUT --header "PRIVATE-TOKEN: $env:GITLAB_TOKEN" --form "avatar=@$Icon" "$api/projects/$($project.id)"
+        if ($status -eq '200') { Write-Host '  Icon uploaded.' -ForegroundColor Green }
+        else { $todo.Add("Icon: the upload failed (HTTP $status). Upload $Icon in the GitLab project's Settings -> General -> Project avatar.") }
     }
 
     Push-Location $localFolder
@@ -273,16 +434,74 @@ if ($env:GITLAB_TOKEN) {
     $todo.Add("Create the GitLab project: set `$env:GITLAB_TOKEN and run this again on a fresh folder, or push (git push -u origin main) and set the description, topics, protected v* tags and settings by hand, as in the handbook's checklist.")
 }
 
+# --- 7. GitHub repository and mirror --------------------------------------------------------------
+
+if ($githubSetup) {
+    $ghHeaders = @{
+        Authorization = "Bearer $env:GITHUB_TOKEN"; Accept = 'application/vnd.github+json'
+        'X-GitHub-Api-Version' = '2022-11-28'; 'User-Agent' = 'New-PigeonProject'
+    }
+    function Invoke-GitHub([string] $method, [string] $uri, $body) {
+        Invoke-RestMethod -Method $method -Uri "https://api.github.com$uri" -Headers $ghHeaders -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body)
+    }
+
+    Invoke-GitHub POST "/orgs/$org/repos" @{
+        name = $path; description = $githubDescription; homepage = 'https://pigeonstudios.co.uk/free/'
+        private = $false; auto_init = $false
+    } | Out-Null
+    Invoke-GitHub PUT "/repos/$org/$path/topics" @{ names = $githubTopics } | Out-Null
+    Write-Host "  GitHub repository created: $githubUrl" -ForegroundColor Green
+
+    foreach ($file in 'protect-main.json', 'protect-release-tags.json') {
+        $ruleset = [System.IO.File]::ReadAllText((Join-Path $Handbook "github\rulesets\$file"), $utf8)
+        $made = Invoke-GitHub POST "/repos/$org/$path/rulesets" $ruleset
+        Write-Host "  Ruleset added: $($made.name)" -ForegroundColor Green
+    }
+
+    # The push mirror: SSH as git@github.com, checked against GitHub's published host keys, using a key
+    # GitLab makes for this mirror alone. It never force-pushes (keep divergent refs) and mirrors every
+    # branch and tag, so a v* tag on GitLab runs the GitHub release workflow.
+    $hostKeys = @((Invoke-RestMethod -Uri 'https://api.github.com/meta' -Headers @{ 'User-Agent' = 'New-PigeonProject' }).ssh_keys | ForEach-Object { "github.com $_" })
+    $mirror = Invoke-GitLab POST "/projects/$($project.id)/remote_mirrors" @{
+        url = "ssh://git@github.com/$org/$path.git"; auth_method = 'ssh_public_key'; host_keys = $hostKeys
+        enabled = $true; keep_divergent_refs = $true; only_protected_branches = $false
+    }
+    $mirrorKey = (Invoke-GitLab GET "/projects/$($project.id)/remote_mirrors/$($mirror.id)/public_key").public_key
+    Invoke-GitHub POST "/repos/$org/$path/keys" @{ title = "GitLab push mirror ($groupPath/$path)"; key = $mirrorKey; read_only = $false } | Out-Null
+    Write-Host '  Push mirror created, and its key added to GitHub as a deploy key with write access.' -ForegroundColor Green
+
+    Invoke-GitLab POST "/projects/$($project.id)/remote_mirrors/$($mirror.id)/sync" | Out-Null
+    $state = $null
+    for ($i = 0; $i -lt 24; $i++) {
+        Start-Sleep -Seconds 5
+        $state = Invoke-GitLab GET "/projects/$($project.id)/remote_mirrors/$($mirror.id)"
+        if ($state.update_status -in 'finished', 'failed') { break }
+    }
+    if ($state.update_status -eq 'finished') {
+        Write-Host '  Mirror pushed main to GitHub.' -ForegroundColor Green
+    } else {
+        $todo.Add("Mirror: it reported '$($state.update_status)'$(if ($state.last_error) { ": $($state.last_error)" }). Check Settings -> Repository -> Mirroring repositories on GitLab and press Update now; if the host keys were refused, delete the mirror and add it again through the form (handbook: GitHub).")
+    }
+}
+
 # --- What's left ----------------------------------------------------------------------------------
 
-$todo.Add("Icon: add a glyph for '$path' to the handbook's brand/tools/make-icons.js, run it, and upload the PNG (handbook: Brand and icons).")
+if (-not $Icon) {
+    $todo.Add("Icon: add a glyph for '$path' to the handbook's brand/tools/make-icons.js, run it, and upload the PNG to the GitLab project (handbook: Brand and icons), or pass -Icon next time.")
+}
 $images = [regex]::Matches([System.IO.File]::ReadAllText((Join-Path $localFolder 'README.md'), $utf8), '<img src="(?!https?:)([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
 if ($images) {
     $todo.Add("Images: the README shows $($images -join ' and '), which don't exist yet, so the links check fails until they're added. Banners are drawn as in the handbook's Brand and icons.")
 }
 if ($Kind -eq 'Free') {
-    $todo.Add("GitHub: create $githubUrl (public, empty), import the two rulesets from the handbook's github/rulesets/, add the deploy key and GitLab push mirror (handbook: GitHub), and the site webhook.")
-    $todo.Add('GitHub release workflow: copy .github/workflows/release.yml (and ci.yml) from an existing free resource, so tags build the zip on GitHub.')
+    if (-not $githubSetup) {
+        $todo.Add("GitHub: with both GITLAB_TOKEN and GITHUB_TOKEN set this is done for you. By hand: create $githubUrl (public, empty, description '$githubDescription', website https://pigeonstudios.co.uk/free/, topics $($githubTopics -join ', ')), import the two rulesets from the handbook's github/rulesets/, and add the deploy key and GitLab push mirror (handbook: GitHub).")
+    }
+    if ($Type -ne 'FiveM') {
+        $todo.Add('GitHub workflows: copy .github/workflows/ci.yml and release.yml from an existing General free project (Monday to Discord), so tags build the release on GitHub.')
+    }
+    $todo.Add('Website: WordPress admin -> GitHub -> Refresh now. The site plugin adds its webhook to the new repository by itself and lists it on the Free releases page.')
+    $todo.Add("Lists of free resources: the GitHub, CI and studio layout tables in the handbook, and the profile table and Q&A and Ideas dropdowns in Repo Standards.")
 }
 if ($Kind -eq 'Paid') {
     $todo.Add("Releases -> Tebex: create fivem/releases/tebex/$path when the first release ships, and the Cfx.re asset 'PS - $Name'.")
