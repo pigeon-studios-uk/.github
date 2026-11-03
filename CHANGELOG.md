@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.13.2] - 2026-11-03
+
+### Fixed
+
+- `Publish-PigeonProject.ps1` run on a repository that's already public would have replaced its description and topics, removing any added by hand, including the frameworks the website reads. It now only adds what's missing.
+
 ## [2.13.1] - 2026-11-03
 
 ### Changed

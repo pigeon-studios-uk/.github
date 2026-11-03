@@ -86,10 +86,12 @@ foreach ($file in $rulesetFiles) {
     $rulesets[$file] = $text
 }
 
-$repoExists = (Get-Url "https://api.github.com/repos/$org/$path" $ghHeaders).Status -eq 200
+$repo = Get-Url "https://api.github.com/repos/$org/$path" $ghHeaders
+$repoExists = $repo.Status -eq 200
+$live = if ($repoExists) { $repo.Content | ConvertFrom-Json } else { $null }
 if ($DryRun) {
     Write-Host ''
-    Write-Host "  GitHub repository $(if ($repoExists) { 'exists; its settings would be refreshed' } else { 'would be created' })."
+    Write-Host "  GitHub repository $(if ($repoExists) { 'exists; only missing settings would be added' } else { 'would be created' })."
     Write-Host 'Dry run: nothing changed.' -ForegroundColor Yellow
     return
 }
@@ -102,9 +104,17 @@ if ($repoExists) {
     Invoke-GitHub POST "/orgs/$org/repos" @{ name = $path; private = $false; auto_init = $false } | Out-Null
     Write-Host "  GitHub repository created: $githubUrl" -ForegroundColor Green
 }
-Invoke-GitHub PATCH "/repos/$org/$path" @{ description = $githubDescription; homepage = 'https://pigeonstudios.co.uk/free/' } | Out-Null
-Invoke-GitHub PUT "/repos/$org/$path/topics" @{ names = $githubTopics } | Out-Null
-Write-Host '  Description, website and topics set.' -ForegroundColor Green
+# Only what's missing: a repository that's already public may have been edited since, and the website reads its
+# frameworks from the topics, so nothing here is ever overwritten or removed.
+$missing = @{}
+if (-not $live.description) { $missing.description = $githubDescription }
+if (-not $live.homepage) { $missing.homepage = 'https://pigeonstudios.co.uk/free/' }
+if ($missing.Count) { Invoke-GitHub PATCH "/repos/$org/$path" $missing | Out-Null }
+$liveTopics = @($live.topics | Where-Object { $_ })
+$newTopics = @($githubTopics | Where-Object { $liveTopics -notcontains $_ })
+if ($newTopics) { Invoke-GitHub PUT "/repos/$org/$path/topics" @{ names = @(($liveTopics + $newTopics) | Sort-Object -Unique) } | Out-Null }
+if ($missing.Count -or $newTopics) { Write-Host '  Missing description, website or topics added.' -ForegroundColor Green }
+else { Write-Host '  Description, website and topics already set.' -ForegroundColor DarkGray }
 
 $existingRulesets = @(Invoke-GitHub GET "/repos/$org/$path/rulesets" | ForEach-Object { $_.name })
 foreach ($file in $rulesetFiles) {
