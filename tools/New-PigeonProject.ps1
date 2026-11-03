@@ -380,11 +380,13 @@ try {
 } finally { Pop-Location }
 Write-Host '  First commit made.' -ForegroundColor Green
 
-# Bodies go as UTF-8 bytes: Windows PowerShell would otherwise send them in the ANSI code page.
+# Bodies go as UTF-8 bytes: Windows PowerShell would otherwise send them in the ANSI code page. The comma
+# returns the bytes as one array; without it PowerShell unrolls them into a list of numbers, which
+# Invoke-RestMethod sends as text ("123 34 ...") and the API rejects as invalid JSON.
 function ConvertTo-Body($body) {
     if ($null -eq $body) { return $null }
     $json = if ($body -is [string]) { $body } else { $body | ConvertTo-Json -Depth 10 }
-    [System.Text.Encoding]::UTF8.GetBytes($json)
+    , [System.Text.Encoding]::UTF8.GetBytes($json)
 }
 
 # --- 6. GitLab project ----------------------------------------------------------------------------

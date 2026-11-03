@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.10.1] - 2026-11-03
+
+### Fixed
+
+- `New-PigeonProject.ps1` failed at its first GitLab request with `{"error":"Invalid JSON format"}`: Windows PowerShell unrolled each request's UTF-8 bytes into a list of numbers, which was sent as text. Request bodies now go as one byte array, so the GitLab and GitHub set-up steps work.
+
 ## [2.10.0] - 2026-11-03
 
 ### Added
