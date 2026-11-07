@@ -44,6 +44,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon No Seat Shuffle**](https://github.com/pigeon-studios-uk/pigeon-no-seat-shuffle) | Stops passengers sliding into the driver's seat by themselves, with a key and /seat to change seats on purpose |
 | [**Pigeon No Wanted**](https://github.com/pigeon-studios-uk/pigeon-no-wanted) | Turns off GTA's wanted level, AI police and the AI ambulances and fire engines, with each service chosen in the config |
 | [**Pigeon Population**](https://github.com/pigeon-studios-uk/pigeon-population) | Sets how many NPCs, cars and parked vehicles GTA spawns, by zone and time of day, plus garbage trucks, boats and distant traffic |
+| [**Pigeon Quiet City**](https://github.com/pigeon-studios-uk/pigeon-quiet-city) | Turns off GTA's fake distant sirens, the police scanner voice, wanted music and flight music |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
