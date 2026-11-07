@@ -35,6 +35,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Notes**](https://github.com/pigeon-studios-uk/pigeon-notes) | Write notes and leave them on walls, tables and floors for other players to find and read |
 | [**Pigeon Seatbelt**](https://github.com/pigeon-studios-uk/pigeon-seatbelt) | Buckle up with a key, or go through the windscreen in a crash, with a warning light and a chime |
 | [**Pigeon Keep Hats**](https://github.com/pigeon-studios-uk/pigeon-keep-hats) | Stops hats, helmets and glasses getting knocked off when a player is punched or pushed |
+| [**Pigeon No Combat Roll**](https://github.com/pigeon-studios-uk/pigeon-no-combat-roll) | Stops players combat rolling while they aim a gun, or limits them to one roll every few seconds |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
