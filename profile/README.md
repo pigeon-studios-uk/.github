@@ -42,6 +42,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon No One-Shot Headshots**](https://github.com/pigeon-studios-uk/pigeon-no-one-shot-headshots) | Stops headshots killing players in one shot, so a shot to the head does the same damage as one to the body |
 | [**Pigeon No Pistol Whip**](https://github.com/pigeon-studios-uk/pigeon-no-pistol-whip) | Stops players hitting people with the gun in their hand, by blocking melee attacks while they hold one |
 | [**Pigeon No Seat Shuffle**](https://github.com/pigeon-studios-uk/pigeon-no-seat-shuffle) | Stops passengers sliding into the driver's seat by themselves, with a key and /seat to change seats on purpose |
+| [**Pigeon No Wanted**](https://github.com/pigeon-studios-uk/pigeon-no-wanted) | Turns off GTA's wanted level, AI police and the AI ambulances and fire engines, with each service chosen in the config |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
