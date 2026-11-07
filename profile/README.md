@@ -37,6 +37,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Keep Hats**](https://github.com/pigeon-studios-uk/pigeon-keep-hats) | Stops hats, helmets and glasses getting knocked off when a player is punched or pushed |
 | [**Pigeon No Combat Roll**](https://github.com/pigeon-studios-uk/pigeon-no-combat-roll) | Stops players combat rolling while they aim a gun, or limits them to one roll every few seconds |
 | [**Pigeon No Health Regen**](https://github.com/pigeon-studios-uk/pigeon-no-health-regen) | Stops GTA healing hurt players by itself, or slows it down and sets how far it heals |
+| [**Pigeon No Idle Cam**](https://github.com/pigeon-studios-uk/pigeon-no-idle-cam) | Stops GTA's cinematic idle camera from taking over when a player stands or sits still |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
