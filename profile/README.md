@@ -40,6 +40,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon No Idle Cam**](https://github.com/pigeon-studios-uk/pigeon-no-idle-cam) | Stops GTA's cinematic idle camera from taking over when a player stands or sits still |
 | [**Pigeon No NPC Loot**](https://github.com/pigeon-studios-uk/pigeon-no-npc-loot) | Stops NPCs dropping their weapons when they die, and stops police cars and other vehicles handing out free guns |
 | [**Pigeon No One-Shot Headshots**](https://github.com/pigeon-studios-uk/pigeon-no-one-shot-headshots) | Stops headshots killing players in one shot, so a shot to the head does the same damage as one to the body |
+| [**Pigeon No Pistol Whip**](https://github.com/pigeon-studios-uk/pigeon-no-pistol-whip) | Stops players hitting people with the gun in their hand, by blocking melee attacks while they hold one |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
