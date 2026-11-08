@@ -16,6 +16,7 @@ body:
       label: Which resource or tool?
       options:
         - Pigeon Bucket Monitor
+        - Pigeon Crouch
         - Pigeon Dice
         - Pigeon Driveby Rules
         - Pigeon Engine

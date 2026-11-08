@@ -47,6 +47,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Quiet City**](https://github.com/pigeon-studios-uk/pigeon-quiet-city) | Turns off GTA's fake distant sirens, the police scanner voice, wanted music and flight music |
 | [**Pigeon Ragdoll**](https://github.com/pigeon-studios-uk/pigeon-ragdoll) | A key to fall over and lie limp, and get back up, with a cooldown and no falling in vehicles or water |
 | [**Pigeon Hands Up**](https://github.com/pigeon-studios-uk/pigeon-hands-up) | Hands up on a key, and kneel with your hands behind your head, with weapons locked away and a state bag for police resources |
+| [**Pigeon Crouch**](https://github.com/pigeon-studios-uk/pigeon-crouch) | Crouch on Left Ctrl with GTA's own crouched walk and aim, in place of stealth mode, synced for everyone |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
