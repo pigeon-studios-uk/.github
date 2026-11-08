@@ -55,6 +55,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon No Vehicle Weapons**](https://github.com/pigeon-studios-uk/pigeon-no-vehicle-weapons) | Turns off the guns, cannons and missiles built into vehicles, while keeping searchlights and water cannons |
 | [**Pigeon No Air Control**](https://github.com/pigeon-studios-uk/pigeon-no-air-control) | Stops drivers spinning and flipping cars in mid-air, and rocking upside-down cars back onto their wheels |
 | [**Pigeon Stamina**](https://github.com/pigeon-studios-uk/pigeon-stamina) | Infinite stamina, or sprinting and swimming stamina that drains and recovers at the rates you choose |
+| [**Pigeon Radio Off**](https://github.com/pigeon-studios-uk/pigeon-radio-off) | Vehicles start with the radio off, some vehicles have no radio at all, and stations you choose are taken off the wheel |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
