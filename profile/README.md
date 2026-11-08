@@ -50,6 +50,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Crouch**](https://github.com/pigeon-studios-uk/pigeon-crouch) | Crouch on Left Ctrl with GTA's own crouched walk and aim, in place of stealth mode, synced for everyone |
 | [**Pigeon Cruise Control**](https://github.com/pigeon-studios-uk/pigeon-cruise-control) | Cruise control on a key that holds your speed, caps it downhill, and lets go when you brake |
 | [**Pigeon Vehicle Doors**](https://github.com/pigeon-studios-uk/pigeon-vehicle-doors) | Open and close vehicle doors, windows, the hood and the trunk by command or key, checked by the server and synced for everyone |
+| [**Pigeon Point**](https://github.com/pigeon-studios-uk/pigeon-point) | Point your finger where you look on B, with GTA Online's own pointing animation, synced for everyone |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
