@@ -57,6 +57,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Stamina**](https://github.com/pigeon-studios-uk/pigeon-stamina) | Infinite stamina, or sprinting and swimming stamina that drains and recovers at the rates you choose |
 | [**Pigeon Radio Off**](https://github.com/pigeon-studios-uk/pigeon-radio-off) | Vehicles start with the radio off, some vehicles have no radio at all, and stations you choose are taken off the wheel |
 | [**Pigeon HUD Cleanup**](https://github.com/pigeon-studios-uk/pigeon-hud-cleanup) | Hides the parts of GTA's HUD you choose, from cash and area names to the crosshair, and sets when the minimap shows |
+| [**Pigeon Police Scanner**](https://github.com/pigeon-studios-uk/pigeon-police-scanner) | GTA's own police radio chatter in and near emergency vehicles, at police stations, or for on-duty police |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
