@@ -61,6 +61,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Me and Do**](https://github.com/pigeon-studios-uk/pigeon-me-do) | /me and /do above your head and in nearby chat, with character names on Qbox, QBCore and ESX |
 | [**Pigeon AFK Kick**](https://github.com/pigeon-studios-uk/pigeon-afk-kick) | Warns, then kicks, players who stand still too long, checked on the server, with staff left alone |
 | [**Pigeon Time and Weather**](https://github.com/pigeon-studios-uk/pigeon-time-weather) | The same time and weather for every player, changing by itself, with staff commands and a blackout, and no fighting with vMenu |
+| [**Pigeon Carry**](https://github.com/pigeon-studios-uk/pigeon-carry) | Carry another player over your shoulder or on your back, once they accept, checked by the server |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
