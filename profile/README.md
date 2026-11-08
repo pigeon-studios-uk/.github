@@ -52,6 +52,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon Vehicle Doors**](https://github.com/pigeon-studios-uk/pigeon-vehicle-doors) | Open and close vehicle doors, windows, the hood and the trunk by command or key, checked by the server and synced for everyone |
 | [**Pigeon Point**](https://github.com/pigeon-studios-uk/pigeon-point) | Point your finger where you look on B, with GTA Online's own pointing animation, synced for everyone |
 | [**Pigeon Indicators**](https://github.com/pigeon-studios-uk/pigeon-indicators) | Indicators and hazard lights on the arrow keys, synced for every player, and off by themselves after a turn |
+| [**Pigeon No Vehicle Weapons**](https://github.com/pigeon-studios-uk/pigeon-no-vehicle-weapons) | Turns off the guns, cannons and missiles built into vehicles, while keeping searchlights and water cannons |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 
