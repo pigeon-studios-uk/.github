@@ -59,6 +59,7 @@ We build scripts, models and tools for FiveM roleplay servers, from small free u
 | [**Pigeon HUD Cleanup**](https://github.com/pigeon-studios-uk/pigeon-hud-cleanup) | Hides the parts of GTA's HUD you choose, from cash and area names to the crosshair, and sets when the minimap shows |
 | [**Pigeon Police Scanner**](https://github.com/pigeon-studios-uk/pigeon-police-scanner) | GTA's own police radio chatter in and near emergency vehicles, at police stations, or for on-duty police |
 | [**Pigeon Me and Do**](https://github.com/pigeon-studios-uk/pigeon-me-do) | /me and /do above your head and in nearby chat, with character names on Qbox, QBCore and ESX |
+| [**Pigeon AFK Kick**](https://github.com/pigeon-studios-uk/pigeon-afk-kick) | Warns, then kicks, players who stand still too long, checked on the server, with staff left alone |
 | [**Monday to Discord**](https://github.com/pigeon-studios-uk/monday-to-discord) | Posts monday.com board activity to Discord, routed by rules |
 | [**Pigeon Versions**](https://github.com/pigeon-studios-uk/pigeon-versions) | The version registry and update checker every Pigeon Studios resource uses |
 

@@ -15,6 +15,7 @@ body:
     attributes:
       label: Which resource or tool?
       options:
+        - Pigeon AFK Kick
         - Pigeon Bucket Monitor
         - Pigeon Crouch
         - Pigeon Cruise Control
