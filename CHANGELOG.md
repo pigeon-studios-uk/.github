@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.15.1] - 2026-11-20
+
+### Fixed
+
+- When GitLab or GitHub was rate-limiting requests (HTTP 429), the tools blamed the token: `New-PigeonProject.ps1` said the GitLab token couldn't see the group, and other checks could have read it as a project or tag that doesn't exist. Every request now waits and tries again, as long as `Retry-After` asks and three tries at most (about a minute), and if the limit lasts it stops with a message saying it's the rate limit and to try again in a few minutes.
+
 ## [2.15.0] - 2026-11-20
 
 ### Added

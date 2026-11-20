@@ -76,12 +76,36 @@ function ConvertTo-Body($body) {
     , [System.Text.Encoding]::UTF8.GetBytes($json)
 }
 
+# HTTP 429 means GitLab or GitHub is rate-limiting us for a while, not that the token is wrong. GitLab did it on
+# 20 November 2026 and the tools said the token couldn't see the group. A 429 means the request wasn't carried
+# out, so it's safe to send again: this runs the request, and on a 429 waits as long as Retry-After asks (up to
+# 30 seconds; 10, then 20 without one) and tries again, three tries in all, about a minute at most. If it's still
+# 429 it stops with a message that says so, so no caller can mistake it for "not found" or "no access".
+function Invoke-Patiently([string] $service, [scriptblock] $request) {
+    for ($try = 1; ; $try++) {
+        try { & $request; return }
+        catch [System.Net.WebException] {
+            $failed = $_.Exception.Response
+            if (-not $failed -or [int] $failed.StatusCode -ne 429) { throw }
+            if ($try -ge 3) { throw "$service is rate-limiting requests (HTTP 429), so this isn't a token or permissions problem. Try again in a few minutes." }
+            $after = "$($failed.Headers['Retry-After'])"
+            $seconds = 0; $date = [datetime]::MinValue
+            if (-not [int]::TryParse($after, [ref] $seconds)) {
+                $seconds = if ([datetime]::TryParse($after, [ref] $date)) { [int] [math]::Ceiling(($date.ToUniversalTime() - [datetime]::UtcNow).TotalSeconds) } else { 10 * $try }
+            }
+            $wait = [math]::Min([math]::Max($seconds, 1), 30)
+            Write-Host "  $service is rate-limiting requests (HTTP 429). Trying again in $wait second$(if ($wait -ne 1) { 's' })." -ForegroundColor Yellow
+            Start-Sleep -Seconds $wait
+        }
+    }
+}
+
 function Invoke-GitLab([string] $method, [string] $uri, $body) {
-    Invoke-RestMethod -Method $method -Uri "$api$uri" -Headers $headers -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body)
+    Invoke-Patiently GitLab { Invoke-RestMethod -Method $method -Uri "$api$uri" -Headers $headers -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body) }
 }
 
 function Invoke-GitHub([string] $method, [string] $uri, $body) {
-    Invoke-RestMethod -Method $method -Uri "https://api.github.com$uri" -Headers $ghHeaders -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body)
+    Invoke-Patiently GitHub { Invoke-RestMethod -Method $method -Uri "https://api.github.com$uri" -Headers $ghHeaders -ContentType 'application/json; charset=utf-8' -Body (ConvertTo-Body $body) }
 }
 
 # PowerShell carries on when a native command fails, so every git call checks its own exit code. A warning
@@ -99,11 +123,15 @@ function Test-Git {
     $LASTEXITCODE -eq 0
 }
 
-# A read-only request that reports a 4xx instead of stopping: its status, headers and body as UTF-8 text.
+# A read-only request that reports a 4xx instead of stopping: its status, headers and body as UTF-8 text. A 429
+# is retried, and one that lasts stops with a rate-limit message instead of being reported (Invoke-Patiently).
 function Get-Url([string] $uri, [hashtable] $requestHeaders) {
+    $service = if (([uri] $uri).Host -like '*gitlab*') { 'GitLab' } else { 'GitHub' }
     try {
-        $response = Invoke-WebRequest -Uri $uri -Headers $requestHeaders -UseBasicParsing
-        [pscustomobject]@{ Status = [int] $response.StatusCode; Headers = $response.Headers; Content = $utf8.GetString($response.RawContentStream.ToArray()) }
+        Invoke-Patiently $service {
+            $response = Invoke-WebRequest -Uri $uri -Headers $requestHeaders -UseBasicParsing
+            [pscustomobject]@{ Status = [int] $response.StatusCode; Headers = $response.Headers; Content = $utf8.GetString($response.RawContentStream.ToArray()) }
+        }
     } catch [System.Net.WebException] {
         if (-not $_.Exception.Response) { throw "Couldn't reach ${uri}: $($_.Exception.Message)" }
         [pscustomobject]@{ Status = [int] $_.Exception.Response.StatusCode; Headers = @{}; Content = '' }
