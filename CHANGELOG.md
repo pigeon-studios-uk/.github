@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.14.0] - 2026-11-20
+
+### Added
+
+- `.github/FUNDING.yml`: the Sponsor button on every repository in the organisation that doesn't have its own, linking to our Buy Me a Coffee page (buymeacoffee.com/pigeonstudios) for optional tips. It matches the "Tips" section of the Website Terms of Use.
+
 ## [2.13.3] - 2026-11-03
 
 ### Fixed

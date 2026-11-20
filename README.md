@@ -49,6 +49,7 @@ These apply to every project, on both platforms, unless a repository has its own
 | [Organisation profile](profile/README.md) | The public page at https://github.com/pigeon-studios-uk: free releases, support, policies and legal links |
 | [Discussion forms](.github/DISCUSSION_TEMPLATE/) | The Q&A and Ideas forms for [organisation Discussions](https://github.com/orgs/pigeon-studios-uk/discussions), which live in this repository |
 | [Pull request template](.github/pull_request_template.md) | What every pull request must include, with checklists for each project type |
+| [Funding](.github/FUNDING.yml) | The Sponsor button, linking to our [Buy Me a Coffee](https://buymeacoffee.com/pigeonstudios) page for optional tips |
 
 ## Licences
 
@@ -114,7 +115,7 @@ Run `Get-Help .\tools\New-PigeonRepo.ps1 -Full` for every option. Afterwards:
 
 ## How GitHub defaults work
 
-GitHub uses the files in this **public** repository for every repository in the pigeon-studios-uk organisation, **public and private**, that doesn't have its own copy of that file. That covers `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `CODE_OF_CONDUCT.md`, the issue forms and the pull request template.
+GitHub uses the files in this **public** repository for every repository in the pigeon-studios-uk organisation, **public and private**, that doesn't have its own copy of that file. That covers `CONTRIBUTING.md`, `SECURITY.md`, `SUPPORT.md`, `CODE_OF_CONDUCT.md`, the issue forms, the pull request template and `FUNDING.yml` (the Sponsor button, linking to our Buy Me a Coffee page).
 
 - This repository must stay **public**, or the defaults stop working.
 - Paid and internal repositories override `CONTRIBUTING.md` and the pull request template with their private versions.
@@ -173,7 +174,8 @@ These documents were drafted to be consistent with our published legal pages, bu
 ├── .github/
 │   ├── ISSUE_TEMPLATE/           issue forms and contact links
 │   ├── DISCUSSION_TEMPLATE/      Q&A and Ideas forms for organisation Discussions
-│   └── pull_request_template.md
+│   ├── pull_request_template.md
+│   └── FUNDING.yml               Sponsor button (Buy Me a Coffee)
 ├── licences/
 │   ├── free/LICENSE.md           Pigeon Studios Free Licence
 │   ├── paid/LICENSE.md           Digital Product Licence (EULA)
