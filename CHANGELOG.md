@@ -4,6 +4,12 @@ All notable changes to the Pigeon Studios repository standards are documented he
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.15.0] - 2026-11-20
+
+### Added
+
+- `Publish-PigeonProject.ps1` switches on the new repository's Sponsorships feature, so its Sponsor button (our Buy Me a Coffee page, from `.github/FUNDING.yml`) shows straight away. GitHub only shows the button where that feature is on, and its REST API can't change it, so this uses GraphQL. Run again, it leaves a repository where it's already on alone; if GitHub refuses, it says to tick the box by hand.
+
 ## [2.14.0] - 2026-11-20
 
 ### Added

@@ -9,9 +9,9 @@
     First it refuses if the project isn't ready: placeholders left in the README, images it shows that don't
     exist, or no GitHub release workflow. Nothing empty is ever public.
 
-    Then it sets up the public GitHub repository (description, website, topics), the two rulesets from the
-    handbook, the GitLab push mirror over SSH with GitHub's host keys, its deploy key with write access, the
-    GitHub badge on GitLab, and one mirror push. The website finds the repository and adds its webhook on its
+    Then it sets up the public GitHub repository (description, website, topics, and the Sponsor button from the
+    organisation's FUNDING.yml), the two rulesets from the handbook, the GitLab push mirror over SSH with GitHub's
+    host keys, its deploy key with write access, the GitHub badge on GitLab, and one mirror push. The website finds the repository and adds its webhook on its
     next hourly refresh. The Overview page and the Discussions forms are updated by the first release.
 
 .PARAMETER Slug
@@ -103,7 +103,7 @@ if ($DryRun) {
 if ($repoExists) {
     Write-Host '  GitHub repository already exists.' -ForegroundColor DarkGray
 } else {
-    Invoke-GitHub POST "/orgs/$org/repos" @{ name = $path; private = $false; auto_init = $false } | Out-Null
+    $live = Invoke-GitHub POST "/orgs/$org/repos" @{ name = $path; private = $false; auto_init = $false }
     Write-Host "  GitHub repository created: $githubUrl" -ForegroundColor Green
 }
 # Only what's missing: a repository that's already public may have been edited since, and the website reads its
@@ -117,6 +117,22 @@ $newTopics = @($githubTopics | Where-Object { $liveTopics -notcontains $_ })
 if ($newTopics) { Invoke-GitHub PUT "/repos/$org/$path/topics" @{ names = @(($liveTopics + $newTopics) | Sort-Object -Unique) } | Out-Null }
 if ($missing.Count -or $newTopics) { Write-Host '  Missing description, website or topics added.' -ForegroundColor Green }
 else { Write-Host '  Description, website and topics already set.' -ForegroundColor DarkGray }
+
+# The Sponsor button (our Buy Me a Coffee page, from the organisation's .github/FUNDING.yml) only shows once the
+# repository's Sponsorships feature is on. The REST API can't switch it, so this goes through GraphQL.
+$sponsorQuery = 'query($id: ID!) { node(id: $id) { ... on Repository { hasSponsorshipsEnabled } } }'
+$sponsorOn = (Invoke-GitHub POST '/graphql' @{ query = $sponsorQuery; variables = @{ id = $live.node_id } }).data.node.hasSponsorshipsEnabled
+if ($sponsorOn) {
+    Write-Host '  Sponsor button already on.' -ForegroundColor DarkGray
+} else {
+    $sponsorMutation = 'mutation($id: ID!) { updateRepository(input: { repositoryId: $id, hasSponsorshipsEnabled: true }) { repository { hasSponsorshipsEnabled } } }'
+    $result = Invoke-GitHub POST '/graphql' @{ query = $sponsorMutation; variables = @{ id = $live.node_id } }
+    if ($result.errors -or -not $result.data.updateRepository.repository.hasSponsorshipsEnabled) {
+        Write-Host "  Couldn't switch on the Sponsor button: tick Settings > Features > Sponsorships on GitHub." -ForegroundColor Yellow
+    } else {
+        Write-Host '  Sponsor button switched on.' -ForegroundColor Green
+    }
+}
 
 $existingRulesets = @(Invoke-GitHub GET "/repos/$org/$path/rulesets" | ForEach-Object { $_.name })
 foreach ($file in $rulesetFiles) {
